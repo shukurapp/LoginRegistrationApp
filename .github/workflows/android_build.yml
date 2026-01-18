@@ -1,0 +1,40 @@
+name: Android Kotlin Build (APK)
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Kodu GitHub-dan çəkir
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Java 17 quraşdırır (Kotlin üçün ən stabil versiya)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # 3. Gradle-a icra icazəsi verir (Xəta almamalı üçün vacibdir)
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 4. APK-nı hazırlayır (Həm debug, həm release üçün build edir)
+      - name: Build with Gradle
+        run: ./gradlew assemble
+
+      # 5. Tapılan bütün APK fayllarını GitHub-a yükləyir
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppStarter-Build-Outputs
+          # Bu yol həm debug, həm release APK-larını tapacaq və yükləyəcək
+          path: "**/build/outputs/apk/**/*.apk"
